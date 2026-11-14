@@ -35,6 +35,38 @@ async function register(req, res) {
     res.status(500).json({ message: error.message });
   }
 }
+async function registerAdmin(req, res) {
+  try {
+    const { name, email, password } = req.body;
+    const existingCustomer = await Customer.findOne({ email });
+    const existingAdmin = await Admin.findOne({ email });
+
+    if (existingCustomer || existingAdmin) {
+      return res.status(409).json({
+        message: "Email already exists",
+      });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const admin = await Admin.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({
+      message: "Admin  registered successfully",
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        phone: admin.phone,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -76,4 +108,5 @@ async function login(req, res) {
   }
 }
 
-export { register, login };
+export { register, login, registerAdmin
+ };
